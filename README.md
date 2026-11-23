@@ -3,9 +3,10 @@
 Unofficial tools for [Makera Studio](https://www.makera.com/) projects. Not affiliated with Makera.
 
 - **`makera-check`**: prints each toolpath's speeds and feeds, chip load, and warnings for common mistakes.
-- **`makera-studio-mcp`**: MCP server so an AI assistant can read projects, check them, and look up tool presets.
+- **`makera-studio-mcp`**: MCP server so an AI assistant can read, check and edit projects, and look up tool presets.
 
-Read-only. Nothing here writes to your projects or the Studio library.
+The tool library is only ever read. Projects can be edited, but always into a new file (`<name>-edited.mks`);
+the original is never overwritten. Close the project in Studio first, and regenerate edited toolpaths after opening the copy.
 
 ## Quick start
 
@@ -20,7 +21,7 @@ Add the MCP server to Claude Code:
 claude mcp add makera-studio -- uv --directory /path/to/makera-studio-tools run makera-studio-mcp
 ```
 
-Tools: `read_project`, `check_project`, `list_tools`, `get_feeds`.
+Tools: `read_project`, `check_project`, `list_tools`, `get_feeds`, `edit_operation`.
 
 ## What it checks
 

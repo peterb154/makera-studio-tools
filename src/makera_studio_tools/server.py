@@ -1,10 +1,11 @@
 """MCP server exposing read-only access to Makera Studio projects and its tool library."""
 
 from contextlib import closing
+from pathlib import Path
 
 from mcp.server.mcpserver import MCPServer
 
-from . import library, project
+from . import edit, library, project
 from .check import check
 
 mcp = MCPServer("makera-studio")
@@ -36,6 +37,24 @@ def get_feeds(tool: str = "", material: str = "") -> list[dict]:
     """Preset speeds/feeds per tool and material, filtered by name substrings (e.g. '30º', '6061')."""
     with closing(library.connect()) as con:
         return library.feeds(con, tool, material)
+
+
+@mcp.tool()
+def edit_operation(path: str, op: int, changes: dict, out_path: str = "") -> dict:
+    """Change settings of toolpath `op` (0-based, order from read_project) in a .mks and save a COPY.
+
+    changes keys: rpm, feed, plunge, step_down, step_over, stickout, tool_number, tailstock, ramping,
+    max_depth_enabled, max_depth, safe_z, multiple_depths. Default out_path is <name>-edited.mks.
+    The source is never overwritten. Close the project in Studio first, then open the copy and
+    regenerate the edited toolpaths (saved toolpaths are not recalculated).
+    """
+    src = Path(path).expanduser()
+    out = Path(out_path).expanduser() if out_path else src.with_name(src.stem + "-edited.mks")
+    p = project.load(src)
+    log = edit.set_op(p, op, **changes)
+    edit.save(p, src, out)
+    with closing(library.connect()) as con:
+        return {"saved": str(out), "changes": log, "warnings": check(p, con)["warnings"]}
 
 
 def main():
