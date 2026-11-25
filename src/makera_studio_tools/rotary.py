@@ -171,3 +171,45 @@ def thread(
         ]
     out.append(f"G0 Z{_f(job.safe_z)}")
     return "\n".join(line for line in out + job.footer() if line) + "\n"
+
+
+def cone(
+    job: Job,
+    x1: float,
+    r1: float,
+    x2: float,
+    r2: float,
+    ball_r: float,
+    offsets: tuple[float, ...] = (0.15, 0.0),
+    step: float = 0.3,
+    feed: float = 300,
+    plunge: float = 100,
+) -> str:
+    """Finish a cone (or any straight profile) with a ball end mill.
+
+    (x1, r1) -> (x2, r2) is the part surface to finish, as X and radius. The ball centre runs
+    parallel to it, `ball_r + offset` away along the outward normal, while A turns so the ball
+    advances `step` mm along the surface per turn. Z in the output is the ball tip (centre - ball_r).
+    Each offset is one pass, last one should be 0. Gouging the neighbours is NOT checked: pick
+    x1..x2 so the ball clears the surfaces on either side.
+    """
+    dx, dr = x2 - x1, r2 - r1
+    length = math.hypot(dx, dr)
+    nx, nr = -dr / length, dx / length
+    if nr < 0:  # outward = away from the axis
+        nx, nr = -nx, -nr
+    turns = length / step
+    out = job.header(f"cone X{_f(x1)}R{_f(r1)}-X{_f(x2)}R{_f(r2)} ball{_f(ball_r)}")
+    a = 0.0
+    for o in offsets:
+        d = ball_r + o
+        xa, za = x1 + d * nx, r1 + d * nr - ball_r
+        xb, zb = x2 + d * nx, r2 + d * nr - ball_r
+        out += [f"G0 X{_f(xa)}", f"G0 Z{_f(za + 1)}"]
+        a += 360
+        out.append(f"G1 Z{_f(za)} A{_f(a)} F{_f(plunge)}")
+        a += 360 * turns
+        out.append(f"G1 X{_f(xb)} Z{_f(zb)} A{_f(a)} F{_f(feed)}")
+        a += 360
+        out += [f"G1 A{_f(a)}", f"G0 Z{_f(job.safe_z)}"]
+    return "\n".join(line for line in out + job.footer() if line) + "\n"

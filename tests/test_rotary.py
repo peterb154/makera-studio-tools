@@ -80,3 +80,14 @@ def test_thread_rewinds_low_when_asked_and_ends_at_safe_z():
     rewinds = [i for i, ln in enumerate(lines) if ln.startswith("G0 X71.9")]
     assert all(lines[i - 1] in ("G0 Z8", "G0 Y0") for i in rewinds)
     assert "G0 Z40" in lines[-5:]
+
+
+def test_cone_ball_tip_follows_offset_surface():
+    from makera_studio_tools.rotary import cone
+
+    # 53.97 deg cone, r 17.91 at X 34.92 falling to 13.557 at X 38.086; 1/4" ball
+    code = cone(JOB, 34.92, 17.91, 38.086, 13.557, 3.175, offsets=(0.0,))
+    ends = [m for m in moves(code) if {"X", "Z", "A"} <= set(m)]
+    assert abs(ends[0]["X"] - 40.654) < 0.01 and abs(ends[0]["Z"] - 12.25) < 0.01
+    start = [m for m in moves(code) if set(m) == {"X"}][0]
+    assert abs(start["X"] - 37.488) < 0.01

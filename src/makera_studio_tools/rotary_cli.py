@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from .rotary import Job, thread, turn
+from .rotary import Job, cone, thread, turn
 
 
 def main(argv=None) -> int:
@@ -45,6 +45,15 @@ def main(argv=None) -> int:
     h.add_argument("--feed", type=float, default=150)
     h.add_argument("--check", action="store_true", help="spindle-off pick-up check instead")
     h.add_argument("--retract", type=float, help="rewind radius between passes (just above crests)")
+    c = sub.add_parser("cone", help="finish a straight profile (cone) with a ball end mill")
+    c.add_argument("--x1", type=float, required=True, help="surface start X")
+    c.add_argument("--r1", type=float, required=True, help="surface start radius")
+    c.add_argument("--x2", type=float, required=True, help="surface end X")
+    c.add_argument("--r2", type=float, required=True, help="surface end radius")
+    c.add_argument("--ball-r", type=float, required=True)
+    c.add_argument("--offsets", type=float, nargs="+", default=[0.15, 0.0])
+    c.add_argument("--step", type=float, default=0.3, help="advance along the surface per turn")
+    c.add_argument("--feed", type=float, default=300)
     a = ap.parse_args(argv)
 
     job = Job(
@@ -57,6 +66,8 @@ def main(argv=None) -> int:
     if a.cmd == "turn":
         job.y = a.y_offset
         code = turn(job, a.x1, a.x2, a.r_start, a.r, a.step, a.lead, a.feed)
+    elif a.cmd == "cone":
+        code = cone(job, a.x1, a.r1, a.x2, a.r2, a.ball_r, tuple(a.offsets), a.step, a.feed)
     else:
         code = thread(
             job,
