@@ -98,7 +98,7 @@ def thread(
     hand = +1 if the groove moves +X as A increases). Every pass starts at x_start and runs to
     x_end on that helix, so passes stay in step. `infeed` is the depth of each pass; by default
     passes get lighter as the cut gets wider. check=True writes a spindle-off program that stops
-    the tip 0.5 mm above r_root at four points on the helix so you can see it sits in the groove.
+    the tip 0.8 mm above r_root at four points on the helix so you can see it sits in the groove.
     """
 
     def a_at(x: float) -> float:
@@ -118,7 +118,7 @@ def thread(
             x = x_start + (x_end - x_start) * k / 3
             out += [
                 f"G0 X{_f(x)} A{_f(a_at(x))}",
-                f"G1 Z{_f(r_root + 0.5)} F200",
+                f"G1 Z{_f(r_root + 0.8)} F200",
                 "G4 P5",
                 f"G0 Z{_f(r_root + 2)}",
             ]
