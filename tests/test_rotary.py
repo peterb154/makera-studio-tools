@@ -53,6 +53,7 @@ def test_turn_with_y_offset_keeps_z_as_radius():
 def test_verify_parks_above_reference_before_spindle_starts():
     code = turn(Job(tool=1, rpm=12000, safe_z=40, y=1.6, verify=(48, 12.45)), 60.75, 74, 7.05, 6.925)
     lines = code.splitlines()
-    park = lines.index("G0 Z14.45")
+    park = lines.index("G1 Z14.45 F100")
+    assert lines[park - 1] == "G0 Z22.45"
     assert lines[park + 1] == "G4 S10"
     assert park < lines.index("S12000 M3")

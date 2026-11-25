@@ -39,7 +39,8 @@ class Job:
                 f"G0 Y{_f(self.y)}",
                 f"G0 X{_f(x)}",
                 f"(VERIFY: tip 2mm above R{_f(r)} for 10s)",
-                f"G0 Z{_f(r + 2)}",
+                f"G0 Z{_f(r + 10)}",
+                f"G1 Z{_f(r + 2)} F100",  # slow: a wrong Z shows before it can hit
                 "G4 S10",
                 f"G0 Z{_f(self.safe_z)}",
             ]
