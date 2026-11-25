@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from .rotary import Job, cone, thread, turn
+from .rotary import Job, cone, groove, thread, turn
 
 
 def main(argv=None) -> int:
@@ -54,6 +54,13 @@ def main(argv=None) -> int:
     c.add_argument("--offsets", type=float, nargs="+", default=[0.15, 0.0])
     c.add_argument("--step", type=float, default=0.3, help="advance along the surface per turn")
     c.add_argument("--feed", type=float, default=300)
+    g = sub.add_parser("groove", help="spiral a groove down at fixed X (cut-off with a tab)")
+    g.add_argument("--x", type=float, required=True, help="tool centre X")
+    g.add_argument("--r-start", type=float, required=True, help="start radius, above the stock")
+    g.add_argument("--r", type=float, required=True, help="final radius (tab)")
+    g.add_argument("--per-turn", type=float, default=0.15)
+    g.add_argument("--feed", type=float, default=300)
+    g.add_argument("--y-offset", type=float, default=0.0)
     a = ap.parse_args(argv)
 
     job = Job(
@@ -66,6 +73,9 @@ def main(argv=None) -> int:
     if a.cmd == "turn":
         job.y = a.y_offset
         code = turn(job, a.x1, a.x2, a.r_start, a.r, a.step, a.lead, a.feed)
+    elif a.cmd == "groove":
+        job.y = a.y_offset
+        code = groove(job, a.x, a.r_start, a.r, a.per_turn, a.feed)
     elif a.cmd == "cone":
         code = cone(job, a.x1, a.r1, a.x2, a.r2, a.ball_r, tuple(a.offsets), a.step, a.feed)
     else:

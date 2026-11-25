@@ -91,3 +91,13 @@ def test_cone_ball_tip_follows_offset_surface():
     assert abs(ends[0]["X"] - 40.654) < 0.01 and abs(ends[0]["Z"] - 12.25) < 0.01
     start = [m for m in moves(code) if set(m) == {"X"}][0]
     assert abs(start["X"] - 37.488) < 0.01
+
+
+def test_groove_one_move_per_turn_down_to_final():
+    from makera_studio_tools.rotary import groove
+
+    code = groove(JOB, 23.875, 21.75, 3.25)
+    cuts = [m for m in moves(code) if {"Z", "A"} <= set(m)]
+    assert cuts[-1]["Z"] == 3.25 and all(m.get("X", 23.875) == 23.875 for m in moves(code) if "X" in m)
+    assert all(b["A"] - a["A"] == 360 for a, b in zip(cuts, cuts[1:], strict=False))
+    assert all(a["Z"] - b["Z"] <= 0.150001 for a, b in zip(cuts, cuts[1:], strict=False))

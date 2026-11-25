@@ -213,3 +213,23 @@ def cone(
         a += 360
         out += [f"G1 A{_f(a)}", f"G0 Z{_f(job.safe_z)}"]
     return "\n".join(line for line in out + job.footer() if line) + "\n"
+
+
+def groove(
+    job: Job, x: float, r_start: float, r_final: float, per_turn: float = 0.15, feed: float = 300
+) -> str:
+    """Cut a groove at fixed X by spiralling down `per_turn` per turn to r_final (e.g. to leave a tab).
+
+    One G1 per turn: the firmware sets A speed from the end point of a move, so one long move
+    would run the early, large-radius turns too fast.
+    """
+    out = job.header(f"groove X{_f(x)} R{_f(r_start)}-{_f(r_final)}")
+    out += [f"G0 X{_f(x)}", "G0 A0", f"G0 Z{_f(r_start)}"]
+    a, r = 0.0, r_start
+    while r > r_final + 1e-9:
+        r = max(r_final, r - per_turn)
+        a += 360
+        out.append(f"G1 Z{_f(r)} A{_f(a)} F{_f(feed)}")
+    a += 360
+    out += [f"G1 A{_f(a)}", f"G0 Z{_f(job.safe_z)}"]
+    return "\n".join(line for line in out + job.footer() if line) + "\n"
