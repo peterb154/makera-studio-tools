@@ -25,9 +25,24 @@ class Job:
     safe_z: float
     air: bool = True
     y: float = 0.0  # tool centre offset from the axis in Y
+    # (x, radius) of a known surface: before the spindle starts, the tool parks 2 mm above it
+    # for 10 s so a wrong tool length or Z zero shows as the wrong gap, not as a crash.
+    verify: tuple[float, float] | None = None
 
     def header(self, title: str) -> list[str]:
         lines = [f"({title[: MAX_LINE - 2]})", "G90 G21", f"T{self.tool} M6"]
+        if self.verify:
+            x, r = self.verify
+            lines += [
+                "M5",
+                f"G0 Z{_f(self.safe_z)}",
+                f"G0 Y{_f(self.y)}",
+                f"G0 X{_f(x)}",
+                f"(VERIFY: tip 2mm above R{_f(r)} for 10s)",
+                f"G0 Z{_f(r + 2)}",
+                "G4 S10",
+                f"G0 Z{_f(self.safe_z)}",
+            ]
         if self.air:
             lines.append("M7")
         lines += [f"S{self.rpm} M3", f"G0 Z{_f(self.safe_z)}", f"G0 Y{_f(self.y)}"]

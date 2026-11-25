@@ -13,6 +13,13 @@ def main(argv=None) -> int:
     ap.add_argument("--rpm", type=int, default=12000)
     ap.add_argument("--safe-z", type=float, default=40, help="retract radius, above all stock")
     ap.add_argument("--no-air", action="store_true")
+    ap.add_argument(
+        "--verify",
+        type=float,
+        nargs=2,
+        metavar=("X", "R"),
+        help="park 2 mm above radius R at X for 10 s before starting",
+    )
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     t = sub.add_parser("turn", help="turn a cylinder with a flat end mill")
@@ -39,7 +46,13 @@ def main(argv=None) -> int:
     h.add_argument("--check", action="store_true", help="spindle-off pick-up check instead")
     a = ap.parse_args(argv)
 
-    job = Job(tool=a.tool, rpm=a.rpm, safe_z=a.safe_z, air=not a.no_air)
+    job = Job(
+        tool=a.tool,
+        rpm=a.rpm,
+        safe_z=a.safe_z,
+        air=not a.no_air,
+        verify=tuple(a.verify) if a.verify else None,
+    )
     if a.cmd == "turn":
         job.y = a.y_offset
         code = turn(job, a.x1, a.x2, a.r_start, a.r, a.step, a.lead, a.feed)
