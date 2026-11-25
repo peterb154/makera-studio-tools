@@ -44,6 +44,7 @@ def main(argv=None) -> int:
     h.add_argument("--r-root", type=float, required=True, help="tip radius of the last pass")
     h.add_argument("--feed", type=float, default=150)
     h.add_argument("--check", action="store_true", help="spindle-off pick-up check instead")
+    h.add_argument("--retract", type=float, help="rewind radius between passes (just above crests)")
     a = ap.parse_args(argv)
 
     job = Job(
@@ -58,7 +59,17 @@ def main(argv=None) -> int:
         code = turn(job, a.x1, a.x2, a.r_start, a.r, a.step, a.lead, a.feed)
     else:
         code = thread(
-            job, a.pitch, a.x_start, a.x_end, a.x0, a.hand, a.r_start, a.r_root, feed=a.feed, check=a.check
+            job,
+            a.pitch,
+            a.x_start,
+            a.x_end,
+            a.x0,
+            a.hand,
+            a.r_start,
+            a.r_root,
+            feed=a.feed,
+            check=a.check,
+            retract=a.retract,
         )
     if a.out:
         with open(a.out, "w") as f:

@@ -72,3 +72,11 @@ def test_every_line_is_one_command():
                 assert not re.search(r"\d[GMXYZAFS]", line.split("(")[0]), line
     check = thread(job, 1.5, 75.5, 59.4, 63.68, -1, 6.75, 6.07, check=True)
     assert "G1 Z14.45 F100" in check and not re.search(r"\bM3\b", check)
+
+
+def test_thread_rewinds_low_when_asked_and_ends_at_safe_z():
+    code = thread(JOB, 1.5, 71.9, 59.4, 63.68, -1, 6.75, 6.07, retract=8.0)
+    lines = code.splitlines()
+    rewinds = [i for i, ln in enumerate(lines) if ln.startswith("G0 X71.9")]
+    assert all(lines[i - 1] in ("G0 Z8", "G0 Y0") for i in rewinds)
+    assert "G0 Z40" in lines[-5:]

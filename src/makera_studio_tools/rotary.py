@@ -107,6 +107,7 @@ def thread(
     feed: float = 150,
     spring: bool = True,
     check: bool = False,
+    retract: float | None = None,
 ) -> str:
     """Single-point thread along an existing (or new) helix with a V-bit.
 
@@ -155,6 +156,10 @@ def thread(
     out = job.header(f"thread P{_f(pitch)} X{_f(x_start)}-{_f(x_end)} R{_f(r_root)}")
     r = r_start
     passes = infeed + ([0.0] if spring else [])
+    # Rewind between passes at `retract` (a radius just above the crests) instead of safe Z:
+    # the firmware caps A by surface speed at the current radius, so a low rewind is far faster.
+    # The rewind follows the same helix, so the tip stays over the groove.
+    back = job.safe_z if retract is None else retract
     for d in passes:
         r = max(r_root, r - d)
         out += [
@@ -162,6 +167,7 @@ def thread(
             f"G0 Z{_f(r + 1)}",
             f"G1 Z{_f(r)} F100",
             f"G1 X{_f(x_end)} A{_f(a2)} F{_f(feed)}",
-            f"G0 Z{_f(job.safe_z)}",
+            f"G0 Z{_f(back)}",
         ]
+    out.append(f"G0 Z{_f(job.safe_z)}")
     return "\n".join(line for line in out + job.footer() if line) + "\n"
