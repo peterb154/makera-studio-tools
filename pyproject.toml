@@ -10,6 +10,7 @@ dependencies = ["mcp>=2.3"]
 [project.scripts]
 makera-check = "makera_studio_tools.cli:main"
 makera-studio-mcp = "makera_studio_tools.server:main"
+makera-rotary = "makera_studio_tools.rotary_cli:main"
 
 [build-system]
 requires = ["hatchling"]
