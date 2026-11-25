@@ -130,12 +130,15 @@ def thread(
             f"G0 Z{_f(job.safe_z)}",
             "G0 Y0",
         ]
+        if job.verify:
+            out = job.header(f"thread check P{_f(pitch)} x0 {_f(x0)}")
+            out = [ln for ln in out if not ln.startswith(("S", "M7"))] + ["M5"]
         for k in range(4):
             x = x_start + (x_end - x_start) * k / 3
             out += [
                 f"G0 X{_f(x)} A{_f(a_at(x))}",
                 f"G1 Z{_f(r_root + 0.8)} F200",
-                "G4 S8"  # S = seconds in every firmware mode; P is ms in reprap mode,
+                "G4 S8",  # S = seconds in every firmware mode; P is ms in reprap mode
                 f"G0 Z{_f(r_root + 2)}",
             ]
         out += [f"G0 Z{_f(job.safe_z)}", "M30"]

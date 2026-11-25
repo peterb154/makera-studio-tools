@@ -57,3 +57,18 @@ def test_verify_parks_above_reference_before_spindle_starts():
     assert lines[park - 1] == "G0 Z22.45"
     assert lines[park + 1] == "G4 S10"
     assert park < lines.index("S12000 M3")
+
+
+def test_every_line_is_one_command():
+    """Catches implicit string concatenation gluing two G-code lines together."""
+    job = Job(tool=2, rpm=8000, safe_z=40, verify=(48, 12.45))
+    for code in (
+        thread(job, 1.5, 75.5, 59.4, 63.68, -1, 6.75, 6.07, check=True),
+        thread(job, 1.5, 75.5, 59.4, 63.68, -1, 6.75, 6.07),
+        turn(job, 60.75, 74, 7.05, 6.925),
+    ):
+        for line in code.splitlines():
+            if not line.startswith("("):
+                assert not re.search(r"\d[GMXYZAFS]", line.split("(")[0]), line
+    check = thread(job, 1.5, 75.5, 59.4, 63.68, -1, 6.75, 6.07, check=True)
+    assert "G1 Z14.45 F100" in check and not re.search(r"\bM3\b", check)
