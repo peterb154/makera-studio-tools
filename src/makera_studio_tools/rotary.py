@@ -119,7 +119,7 @@ def thread(
             out += [
                 f"G0 X{_f(x)} A{_f(a_at(x))}",
                 f"G1 Z{_f(r_root + 0.8)} F200",
-                "G4 P5",
+                "G4 S8"  # S = seconds in every firmware mode; P is ms in reprap mode,
                 f"G0 Z{_f(r_root + 2)}",
             ]
         out += [f"G0 Z{_f(job.safe_z)}", "M30"]
