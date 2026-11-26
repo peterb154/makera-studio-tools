@@ -44,13 +44,14 @@ class Job:
                 "G4 S10",
                 f"G0 Z{_f(self.safe_z)}",
             ]
+        lines.append(f"S{self.rpm} M3")
         if self.air:
-            lines.append("M7")
-        lines += [f"S{self.rpm} M3", f"G0 Z{_f(self.safe_z)}", f"G0 Y{_f(self.y)}"]
+            lines.append("M811 S100")  # spindle fan: cools and blows chips (M7 air is not set up on the Z1)
+        lines += [f"G0 Z{_f(self.safe_z)}", f"G0 Y{_f(self.y)}"]
         return lines
 
     def footer(self) -> list[str]:
-        return [f"G0 Z{_f(self.safe_z)}", "M5", "M9" if self.air else "", "M30"]
+        return [f"G0 Z{_f(self.safe_z)}", "M5", "M812" if self.air else "", "M30"]
 
 
 def depths(start: float, final: float, step: float) -> list[float]:
@@ -133,7 +134,7 @@ def thread(
         ]
         if job.verify:
             out = job.header(f"thread check P{_f(pitch)} x0 {_f(x0)}")
-            out = [ln for ln in out if not ln.startswith(("S", "M7"))] + ["M5"]
+            out = [ln for ln in out if not ln.startswith(("S", "M811"))] + ["M5"]
         for k in range(4):
             x = x_start + (x_end - x_start) * k / 3
             out += [

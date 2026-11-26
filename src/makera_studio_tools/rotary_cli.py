@@ -12,7 +12,7 @@ def main(argv=None) -> int:
     ap.add_argument("--tool", type=int, required=True)
     ap.add_argument("--rpm", type=int, default=12000)
     ap.add_argument("--safe-z", type=float, default=40, help="retract radius, above all stock")
-    ap.add_argument("--no-air", action="store_true")
+    ap.add_argument("--no-air", action="store_true", help="leave the spindle fan (M811) off")
     ap.add_argument(
         "--verify",
         type=float,

@@ -101,3 +101,21 @@ def test_groove_one_move_per_turn_down_to_final():
     assert cuts[-1]["Z"] == 3.25 and all(m.get("X", 23.875) == 23.875 for m in moves(code) if "X" in m)
     assert all(b["A"] - a["A"] == 360 for a, b in zip(cuts, cuts[1:], strict=False))
     assert all(a["Z"] - b["Z"] <= 0.150001 for a, b in zip(cuts, cuts[1:], strict=False))
+
+
+def test_fan_on_after_spindle_and_off_at_end():
+    lines = turn(JOB, 43.7, 53.0, 12.95, 12.45).splitlines()
+    assert lines.index("M811 S100") == lines.index("S12000 M3") + 1
+    assert "M812" in lines[-4:] and "M7" not in lines and "M9" not in lines
+    check = thread(
+        Job(tool=2, rpm=8000, safe_z=25, verify=(48, 12.5)),
+        1.5,
+        71.9,
+        59.4,
+        63.68,
+        -1,
+        6.75,
+        6.07,
+        check=True,
+    )
+    assert "M811" not in check
